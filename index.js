@@ -55,37 +55,50 @@ async function checkVisistedStates() {
   return states;
 }
 
-async function loadWorldMap(res) {
+async function loadWorldMap(res, err) {
   const countries = await checkVisistedCountries();
-  res.render("index.ejs", {
+  const config = {
     countries: countries,
     total: countries.length,
     users: users,
     color: users[currentUserId - 1].color,
-  });
+  };
+
+  if (err) {
+    config.error = err;
+  }
+
+  res.render("index.ejs", config);
 }
 
-async function loadStateMap(res) {
+async function loadStateMap(res, err) {
   const states = await checkVisistedStates();
-  res.render("united_states.ejs", {
+  const config = {
     states: states,
     total: states.length,
     users: users,
     color: users[currentUserId - 1].color,
-  });
+  }
+
+  if (err) {
+    config.error = err;
+  }
+
+  res.render("united_states.ejs", config);
 }
 
 app.get("/", async (req, res) => {
   if (currentMap === 1) {
-    await loadWorldMap(res);
+    await loadWorldMap(res, req.query.error);
   } else {
-    await loadStateMap(res);
+    await loadStateMap(res, req.query.error);
   }
 });
 
 app.post("/add", async (req, res) => {
   if (currentMap === 1) {
     const input = req.body["country"];
+    const countries = checkVisistedCountries();
 
     try {
       const result = await db.query(
@@ -102,13 +115,14 @@ app.post("/add", async (req, res) => {
         );
         res.redirect("/");
       } catch (err) {
-        console.log(err);
+        res.redirect("/?error=" + encodeURIComponent('Country has already been added, try again.'));
       }
     } catch (err) {
-      console.log(err);
+      res.redirect("/?error=" + encodeURIComponent('Country name does not exist, try again.'));
     }
   } else {
     const input = req.body["state"];
+    const states = checkVisistedStates();
 
     try {
       const result = await db.query(
@@ -125,10 +139,10 @@ app.post("/add", async (req, res) => {
         );
         res.redirect("/");
       } catch (err) {
-        console.log(err);
+        res.redirect("/?error=" + encodeURIComponent('State has already been added, try again.'));
       }
     } catch (err) {
-      console.log(err);
+      res.redirect("/?error=" + encodeURIComponent('State name does not exist, try again.'));
     }
   }
 });
