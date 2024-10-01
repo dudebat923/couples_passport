@@ -29,11 +29,13 @@ async function checkVisistedCountries() {
   const result = await db.query("SELECT countries.country_code\n" +
       "FROM global_passports AS gp\n" +
       "JOIN countries ON countries.id = gp.country_id\n" +
-      "WHERE user_id = $1", [1]);
+      "WHERE user_id = $1", [currentUserId]);
+
   let countries = [];
   result.rows.forEach((country) => {
     countries.push(country.country_code);
   });
+
   return countries;
 }
 
@@ -41,7 +43,7 @@ async function checkVisistedStates() {
   const result = await db.query("SELECT states.state_code\n" +
       "FROM state_passports AS sp\n" +
       "JOIN states ON states.id = sp.state_id\n" +
-      "WHERE user_id = $1", [1]);
+      "WHERE user_id = $1", [currentUserId]);
   let states = [];
   result.rows.forEach((state) => {
     states.push(state.state_code);
@@ -55,7 +57,7 @@ app.get("/", async (req, res) => {
     countries: countries,
     total: countries.length,
     users: users,
-    color: "teal",
+    color: users[currentUserId - 1].color,
   });
 });
 
@@ -83,7 +85,10 @@ app.post("/add", async (req, res) => {
     console.log(err);
   }
 });
-app.post("/user", async (req, res) => {});
+app.post("/user", async (req, res) => {
+  currentUserId = req.body.user;
+  res.redirect('/');
+});
 
 app.post("/switch", async (req, res) => {
   console.log(req.body);
@@ -93,7 +98,7 @@ app.post("/switch", async (req, res) => {
       countries: countries,
       total: countries.length,
       users: users,
-      color: "teal",
+      color: users[currentUserId - 1].color,
     });
   } else if (req.body.map === 'united states') {
     const states = await checkVisistedStates();
@@ -101,7 +106,7 @@ app.post("/switch", async (req, res) => {
       states: states,
       total: states.length,
       users: users,
-      color: "teal",
+      color: users[currentUserId - 1].color,
     });
   } else {
     res.status(400).send("Unknown map state");
