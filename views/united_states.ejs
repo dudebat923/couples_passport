@@ -9,7 +9,33 @@
 </head>
 
 <body>
-<%- include("partials/control_bar.ejs")%>
+<div id="options-bar">
+  <form class="tab-view tab-view-height-auto" action="/user" method="post">
+    <% users.forEach(function(user) { %>
+      <input type="submit" name="user" value="<%= user.id %>" id="<%= user.id %>">
+      <label for="<%= user.id %>" style="background-color: <%= user.color %>;">
+        <%= user.name %>
+      </label>
+    <% }); %>
+
+    <!--        <input type="submit" name="add" value="new" id="tab">-->
+    <!--        <label for="tab">Add Family Member</label>-->
+
+  </form>
+
+  <form action="/switch" method="post" class="tab-view tab-view-height-auto">
+    <input type="submit" name="map" value="world" id="world-btn">
+    <label for="world-btn" style="background-color: thistle;">World</label>
+
+    <input type="submit" name="map" value="united states" id="us-btn">
+    <label for="us-btn" style="background-color: steelblue;">United States</label>
+  </form>
+</div>
+
+<form action="/add" method="post">
+  <input type="text" name="state" autofocus placeholder="<%= locals.error ? error :  'Enter state name'%>">
+  <button type="submit" style="background-color: <%= color %>;">Add</button>
+</form>
 
   <section class="ag-canvas">
     <svg class="ag-canvas_svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
