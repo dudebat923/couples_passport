@@ -33,7 +33,7 @@
 </div>
 
 <form action="/add" method="post">
-  <input type="text" name="country" autofocus placeholder="<%= locals.error ? error :  'Enter country name'%>">
+  <input type="text" name="country" autofocus placeholder="<%= locals.error ? error :  'Enter country name'%>" autocomplete="off">
   <button type="submit" style="background-color: <%= color %>;">Add</button>
 </form>
 
