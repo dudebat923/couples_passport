@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel Tracker</title>
+  <link rel="stylesheet" href="./styles/main.css">
+</head>
+
+<body>
+<div id="options-bar">
+    <form class="tab-view tab-view-height-auto" action="/user" method="post">
+        <% users.forEach(function(user) { %>
+            <input type="submit" name="user" value="<%= user.id %>" id="<%= user.id %>">
+            <label for="<%= user.id %>" style="background-color: <%= user.color %>;">
+                <%= user.name %>
+            </label>
+        <% }); %>
+
+        <!--        <input type="submit" name="add" value="new" id="tab">-->
+        <!--        <label for="tab">Add Family Member</label>-->
+
+    </form>
+
+    <form action="/switch" method="post" class="tab-view tab-view-height-auto">
+        <input type="submit" name="map" value="world" id="world-btn">
+        <label for="world-btn" style="background-color: thistle;">World</label>
+
+        <input type="submit" name="map" value="united states" id="us-btn">
+        <label for="us-btn" style="background-color: steelblue;">United States</label>
+    </form>
+</div>
+
+  <form action="/add" method="post">
+    <input type="text" name="country" autofocus placeholder="<%= locals.error ? error :  'Enter country name'%>">
+    <button type="submit" style="background-color: <%= color %>;">Add</button>
+  </form>
+</body>
+
+</html>
