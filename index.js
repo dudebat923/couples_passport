@@ -8,7 +8,7 @@ const port = 3000;
 const db = new pg.Client({
   user: "postgres",
   host: "localhost",
-  database: "world",
+  database: "digital_passports",
   password: "12SeptembeR!@",
   port: 5432,
 });
@@ -25,16 +25,32 @@ let users = [
   { id: 3, name: "Monica", color: "dodgerblue" },
 ];
 
-async function checkVisisted() {
-  const result = await db.query("SELECT country_code FROM visited_countries");
+async function checkVisistedCountries() {
+  const result = await db.query("SELECT countries.country_code\n" +
+      "FROM global_passports AS gp\n" +
+      "JOIN countries ON countries.id = gp.country_id\n" +
+      "WHERE user_id = $1", [1]);
   let countries = [];
   result.rows.forEach((country) => {
     countries.push(country.country_code);
   });
   return countries;
 }
+
+async function checkVisistedStates() {
+  const result = await db.query("SELECT states.state_code\n" +
+      "FROM state_passports AS sp\n" +
+      "JOIN states ON states.id = sp.state_id\n" +
+      "WHERE user_id = $1", [1]);
+  let states = [];
+  result.rows.forEach((state) => {
+    states.push(state.state_code);
+  });
+  return states;
+}
+
 app.get("/", async (req, res) => {
-  const countries = await checkVisisted();
+  const countries = await checkVisistedCountries();
   res.render("index.ejs", {
     countries: countries,
     total: countries.length,
@@ -72,7 +88,7 @@ app.post("/user", async (req, res) => {});
 app.post("/switch", async (req, res) => {
   console.log(req.body);
   if (req.body.map === 'world') {
-    const countries = await checkVisisted();
+    const countries = await checkVisistedCountries();
     res.render("index.ejs", {
       countries: countries,
       total: countries.length,
@@ -80,10 +96,10 @@ app.post("/switch", async (req, res) => {
       color: "teal",
     });
   } else if (req.body.map === 'united states') {
-    const countries = await checkVisisted();
+    const states = await checkVisistedStates();
     res.render("united_states.ejs", {
-      countries: countries,
-      total: countries.length,
+      states: states,
+      total: states.length,
       users: users,
       color: "teal",
     });
