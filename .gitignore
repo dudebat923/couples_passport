@@ -1,0 +1,5 @@
+node_modules/
+"External Libraries"/
+.idea/
+.env
+package-lock.json
