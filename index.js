@@ -139,7 +139,8 @@ app.post("/add", async (req, res) => {
         );
         res.redirect("/");
       } catch (err) {
-        res.redirect("/?error=" + encodeURIComponent('State has already been added, try again.'));
+        res.status(500).send(err);
+        //res.redirect("/?error=" + encodeURIComponent('State has already been added, try again.'));
       }
     } catch (err) {
       res.redirect("/?error=" + encodeURIComponent('State name does not exist, try again.'));
