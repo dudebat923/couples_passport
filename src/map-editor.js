@@ -24,7 +24,8 @@ export default class MapEditor {
             "SELECT states.state_code\n" +
             "FROM state_passports AS sp\n" +
             "JOIN states ON states.id = sp.state_id\n" +
-            "WHERE user_id = $1");
+            "WHERE user_id = $1"
+        );
 
         const result = await db.query(query, [userId]);
         let territories = [];
@@ -40,5 +41,36 @@ export default class MapEditor {
         }
 
         return territories;
+    }
+
+    // Adds a user/territory combination to the database
+    static async addVisitedTerritory (mapIndex, userId, territory) {
+        const errorHead = (mapIndex === 1 ? 'Country' : 'State');
+
+        const codeQuery = (mapIndex === 1 ?
+            "SELECT country_code FROM countries WHERE LOWER(country_name) LIKE '%' || $1 || '%';"
+            :
+            "SELECT state_code FROM states WHERE LOWER(state_name) LIKE '%' || $1 || '%';"
+            );
+
+        const insertQuery = (mapIndex === 1 ?
+            "INSERT INTO global_passports (user_id, country_id) SELECT $1, countries.id FROM countries WHERE countries.country_code = $2"
+            :
+            "INSERT INTO state_passports (user_id, state_id) SELECT $1, states.id FROM states WHERE states.state_code = $2"
+        );
+
+        try {
+            const result = await db.query(codeQuery, [territory.toLowerCase()] );
+
+            const data = result.rows[0];
+            const territoryCode = (mapIndex === 1 ? data.country_code : data.state_code);
+            try {
+                await db.query(insertQuery, [userId, territoryCode] );
+            } catch (err) {
+                return `${errorHead} has already been added, try again.`;
+            }
+        } catch (err) {
+            return `${errorHead} name does not exist, try again.`;
+        }
     }
 }

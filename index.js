@@ -1,6 +1,5 @@
 import express from "express";
 import bodyParser from "body-parser";
-import pg from "pg";
 import dotenv from "dotenv";
 import MapEditor from "./src/map-editor.js";
 
@@ -8,15 +7,6 @@ dotenv.config();
 
 const app = express();
 const port = process.env.SERVER_PORT || 3000;
-
-const db = new pg.Client({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-});
-db.connect();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
@@ -71,54 +61,11 @@ app.get("/", async (req, res) => {
 });
 
 app.post("/add", async (req, res) => {
-  if (currentMap === 1) {
-    const input = req.body["country"];
-    const countries = MapEditor.checkVisitedTerritories(1, currentUserId);
-
-    try {
-      const result = await db.query(
-          "SELECT country_code FROM countries WHERE LOWER(country_name) LIKE '%' || $1 || '%';",
-          [input.toLowerCase()]
-      );
-
-      const data = result.rows[0];
-      const countryCode = data.country_code;
-      try {
-        await db.query(
-            "INSERT INTO global_passports (user_id, country_id) SELECT $1, countries.id FROM countries WHERE countries.country_code = $2",
-            [currentUserId, countryCode]
-        );
-        res.redirect("/");
-      } catch (err) {
-        res.redirect("/?error=" + encodeURIComponent('Country has already been added, try again.'));
-      }
-    } catch (err) {
-      res.redirect("/?error=" + encodeURIComponent('Country name does not exist, try again.'));
-    }
+  const errorMessage = await MapEditor.addVisitedTerritory(currentMap, currentUserId, req.body["territory"]);
+  if (errorMessage) {
+    res.redirect("/?error=" + encodeURIComponent(errorMessage));
   } else {
-    const input = req.body["state"];
-    const states = MapEditor.checkVisitedTerritories(2, currentUserId);
-
-    try {
-      const result = await db.query(
-          "SELECT state_code FROM states WHERE LOWER(state_name) LIKE '%' || $1 || '%';",
-          [input.toLowerCase()]
-      );
-
-      const data = result.rows[0];
-      const stateCode = data.state_code;
-      try {
-        await db.query(
-            "INSERT INTO state_passports (user_id, state_id) SELECT $1, states.id FROM states WHERE states.state_code = $2",
-            [currentUserId, stateCode]
-        );
-        res.redirect("/");
-      } catch (err) {
-        res.redirect("/?error=" + encodeURIComponent('State has already been added, try again.'));
-      }
-    } catch (err) {
-      res.redirect("/?error=" + encodeURIComponent('State name does not exist, try again.'));
-    }
+    res.redirect("/");
   }
 });
 
