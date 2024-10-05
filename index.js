@@ -60,15 +60,25 @@ app.get("/", async (req, res) => {
   }
 });
 
-app.post("/add", async (req, res) => {
+app.post("/submit", async (req, res) => {
+  // Add a territory
   if (req.body['operation'] === 'add') {
     const errorMessage = await MapEditor.addVisitedTerritory(currentMap, currentUserId, req.body["territory"]);
     if (errorMessage) {
       res.redirect("/?error=" + encodeURIComponent(errorMessage));
     } else {
+      if (Number(currentUserId) === 1) {
+        // Add territory for everyone if the current user is "together"
+        for (let i = 2; i <= 3; i++) {
+          await MapEditor.addVisitedTerritory(currentMap, i, req.body["territory"]);
+        }
+      }
       res.redirect("/");
     }
-  } else {
+  }
+
+  // Delete a territory
+  else {
     const errorMessage = await MapEditor.deleteVisitedTerritory(currentMap, currentUserId, req.body["territory"]);
     if (errorMessage) {
       res.redirect("/?error=" + encodeURIComponent(errorMessage));
