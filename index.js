@@ -2,6 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import pg from "pg";
 import dotenv from "dotenv";
+import MapEditor from "./src/map-editor.js";
 
 dotenv.config();
 
@@ -29,34 +30,8 @@ let users = [
   { id: 3, name: "Monica", color: "dodgerblue" },
 ];
 
-async function checkVisistedCountries() {
-  const result = await db.query("SELECT countries.country_code\n" +
-      "FROM global_passports AS gp\n" +
-      "JOIN countries ON countries.id = gp.country_id\n" +
-      "WHERE user_id = $1", [currentUserId]);
-
-  let countries = [];
-  result.rows.forEach((country) => {
-    countries.push(country.country_code);
-  });
-
-  return countries;
-}
-
-async function checkVisistedStates() {
-  const result = await db.query("SELECT states.state_code\n" +
-      "FROM state_passports AS sp\n" +
-      "JOIN states ON states.id = sp.state_id\n" +
-      "WHERE user_id = $1", [currentUserId]);
-  let states = [];
-  result.rows.forEach((state) => {
-    states.push(state.state_code);
-  });
-  return states;
-}
-
 async function loadWorldMap(res, err) {
-  const countries = await checkVisistedCountries();
+  const countries = await MapEditor.checkVisitedTerritories(1, currentUserId);
   const config = {
     countries: countries,
     total: countries.length,
@@ -72,7 +47,7 @@ async function loadWorldMap(res, err) {
 }
 
 async function loadStateMap(res, err) {
-  const states = await checkVisistedStates();
+  const states = await MapEditor.checkVisitedTerritories(2, currentUserId);
   const config = {
     states: states,
     total: states.length,
@@ -98,7 +73,7 @@ app.get("/", async (req, res) => {
 app.post("/add", async (req, res) => {
   if (currentMap === 1) {
     const input = req.body["country"];
-    const countries = checkVisistedCountries();
+    const countries = MapEditor.checkVisitedTerritories(1, currentUserId);
 
     try {
       const result = await db.query(
@@ -122,7 +97,7 @@ app.post("/add", async (req, res) => {
     }
   } else {
     const input = req.body["state"];
-    const states = checkVisistedStates();
+    const states = MapEditor.checkVisitedTerritories(2, currentUserId);
 
     try {
       const result = await db.query(
