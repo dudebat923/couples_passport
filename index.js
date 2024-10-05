@@ -61,11 +61,20 @@ app.get("/", async (req, res) => {
 });
 
 app.post("/add", async (req, res) => {
-  const errorMessage = await MapEditor.addVisitedTerritory(currentMap, currentUserId, req.body["territory"]);
-  if (errorMessage) {
-    res.redirect("/?error=" + encodeURIComponent(errorMessage));
+  if (req.body['operation'] === 'add') {
+    const errorMessage = await MapEditor.addVisitedTerritory(currentMap, currentUserId, req.body["territory"]);
+    if (errorMessage) {
+      res.redirect("/?error=" + encodeURIComponent(errorMessage));
+    } else {
+      res.redirect("/");
+    }
   } else {
-    res.redirect("/");
+    const errorMessage = await MapEditor.deleteVisitedTerritory(currentMap, currentUserId, req.body["territory"]);
+    if (errorMessage) {
+      res.redirect("/?error=" + encodeURIComponent(errorMessage));
+    } else {
+      res.redirect("/");
+    }
   }
 });
 

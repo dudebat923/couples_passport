@@ -67,10 +67,40 @@ export default class MapEditor {
             try {
                 await db.query(insertQuery, [userId, territoryCode] );
             } catch (err) {
-                return `${errorHead} has already been added, try again.`;
+                return `${errorHead} has already been added, try again`;
             }
         } catch (err) {
-            return `${errorHead} name does not exist, try again.`;
+            return `${errorHead} name does not exist, try again`;
+        }
+    }
+
+    static async deleteVisitedTerritory (mapIndex, userId, territory) {
+        const errorHead = (mapIndex === 1 ? 'Country' : 'State');
+
+        const getTerritoryQuery = (mapIndex === 1 ?
+                "SELECT id FROM countries WHERE LOWER(country_name) LIKE '%' || $1 || '%';"
+                :
+                "SELECT id FROM states WHERE LOWER(state_name) LIKE '%' || $1 || '%';"
+        );
+
+        const deleteQuery = (mapIndex === 1 ?
+                "DELETE FROM global_passports WHERE user_id = $1 AND country_id = $2"
+                :
+                "DELETE FROM state_passports WHERE user_id = $1 AND state_id = $2"
+        );
+
+        try {
+            const result = await db.query(getTerritoryQuery, [territory.toLowerCase()] );
+
+            const data = result.rows[0];
+            const territoryId = data.id;
+            const deleteResult = await db.query(deleteQuery, [userId, territoryId]);
+
+            if (deleteResult.rowCount === 0) {
+                return `${errorHead} was never visited`;
+            }
+        } catch (err) {
+            return `${errorHead} name does not exist, try again`;
         }
     }
 }
