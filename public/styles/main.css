@@ -72,6 +72,13 @@ body {
   gap: 2rem;
 }
 
+#switch-btn {
+  background: none;
+  color: white;
+  font-weight: bolder;
+  font-size: 1rem;
+}
+
 input {
   font-family: "Roboto", sans-serif;
   outline: 0;
@@ -117,6 +124,8 @@ button {
   outline: none;
   font-size: 0;
   text-align: left;
+  font-weight: normal;
+  color: #ffffff;
 }
 .tab-view > input {
   position: absolute;
@@ -451,7 +460,39 @@ button {
 }
 
 @media screen and (max-width: 767px) {
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
   .tab-view-theme-5 > input:checked + label:after {
     display: none;
+  }
+
+  .total-count {
+    position: relative;
+  }
+
+  .ag-canvas {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  #options-bar{
+    justify-content: center;
+    min-width: 100%;
+    gap: 0;
+  }
+
+  .tab-view {
+    flex-grow: 1;
+  }
+  #switch-btn {
+    font-size: 0.9rem;
   }
 }
